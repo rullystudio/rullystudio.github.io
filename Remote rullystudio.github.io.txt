@@ -4,4 +4,4 @@ git push origin main
 
 git rm -r css //hapus folder
 git commit -m "Hapus folder byd di luar assets"
-git push origin main
+git push origin main / git push --set-upstream origin main
