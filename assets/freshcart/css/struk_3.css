@@ -1,0 +1,107 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #ddd;
+  font-weight: bold;
+}
+
+
+
+* {
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+}
+
+.page {
+  width: 58mm;
+  padding: 2mm;
+  margin: 5mm auto;
+  border: 1px #bbb solid;
+  border-radius: 5px;
+  background: white;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.subpage {
+
+  padding: 3px;
+  height: auto;
+  
+}
+
+@page {
+  width: 21cm;
+  margin: 0;
+}
+
+@media print {
+
+  .page {
+    margin: 0;
+    border: initial;
+    border-radius: initial;
+    width: initial;
+    min-height: initial;
+    box-shadow: initial;
+    background: initial;
+    page-break-after: always;
+  }
+}
+
+.title
+{
+  text-align: center;
+  width: 100%;
+  font-size: 13px;
+  font-family: 'Tahoma' ;
+  margin-bottom: 2mm;
+}
+
+.kode_penjualan
+{
+  text-align: center;
+  width: 100%;
+  font-size: 11px;
+  font-family: 'Tahoma' ;
+}
+
+.garis
+{
+  border-bottom: 1px #000 dashed ;
+  margin-top: 2mm;
+  margin-bottom: 2mm;
+}
+
+
+.footer
+{
+  
+  margin-top: 5mm;
+  margin-bottom: 5mm;
+  font-size: 10px;
+  font-family: 'Tahoma' ;
+  
+}
+
+
+.total
+{
+  font-weight: bold;
+  
+  margin-top: 5mm;
+  padding-left: 250px ;
+  width: 100%;
+  
+}
+
+td
+{
+  font-size: 10px;
+  font-family: 'Tahoma' ;
+}
+
+.tombol_cetak {
+  position: fixed;
+  top: 5mm;
+  right: 5mm;
+}
