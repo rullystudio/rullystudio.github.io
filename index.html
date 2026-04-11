@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventaris Palet - JSON CRUD</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Manajemen Item Palet</h5>
+                    <div>
+                        <button class="btn btn-sm btn-light" onclick="eksporJSON()">
+                            <i class="bi bi-download"></i> Ekspor JSON
+                        </button>
+                        <button class="btn btn-sm btn-light" onclick="document.getElementById('fileInput').click()">
+                            <i class="bi bi-upload"></i> Impor JSON
+                        </button>
+                        <input type="file" id="fileInput" class="d-none" onchange="imporJSON(event)">
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Nama Item</label>
+                            <input type="text" id="nama_item" class="form-control" placeholder="Nama barang">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Jml per Palet</label>
+                            <input type="number" id="jml_per_palet" class="form-control" placeholder="0">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Jml Tumpukan</label>
+                            <input type="number" id="jml_tumpukan" class="form-control" placeholder="0">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button class="btn btn-success w-100" onclick="simpanData()">
+                                <i class="bi bi-plus-circle"></i> Tambah
+                            </button>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nama Item</th>
+                                    <th class="text-center">Jml/Palet</th>
+                                    <th class="text-center">Tumpukan</th>
+                                    <th class="text-center">Total Unit</th>
+                                    <th class="text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    let dbItems = JSON.parse(localStorage.getItem('db_items')) || [];
+
+    function renderTable() {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        
+        dbItems.forEach((item, index) => {
+            const total = item.jml_per_palet * item.jml_tumpukan;
+            const row = `
+                <tr>
+                    <td class="small text-muted">${item.id_item}</td>
+                    <td class="fw-bold">${item.nama_item}</td>
+                    <td class="text-center">${item.jml_per_palet}</td>
+                    <td class="text-center">${item.jml_tumpukan}</td>
+                    <td class="text-center"><span class="badge bg-info text-dark">${total}</span></td>
+                    <td class="text-center">
+                        <button class="btn btn-outline-danger btn-sm" onclick="hapusData(${index})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>`;
+            tbody.innerHTML += row;
+        });
+        localStorage.setItem('db_items', JSON.stringify(dbItems));
+    }
+
+    function simpanData() {
+        const nama = document.getElementById('nama_item').value;
+        const jml = document.getElementById('jml_per_palet').value;
+        const tumpuk = document.getElementById('jml_tumpukan').value;
+
+        if(!nama || !jml || !tumpuk) {
+            alert("Harap isi semua kolom data!");
+            return;
+        }
+
+        const newItem = {
+            id_item: Math.floor(Math.random() * 10000), // Random ID singkat
+            nama_item: nama,
+            jml_per_palet: parseInt(jml),
+            jml_tumpukan: parseInt(tumpuk)
+        };
+
+        dbItems.push(newItem);
+        renderTable();
+        
+        // Reset Input
+        document.getElementById('nama_item').value = '';
+        document.getElementById('jml_per_palet').value = '';
+        document.getElementById('jml_tumpukan').value = '';
+    }
+
+    function hapusData(index) {
+        if(confirm("Apakah Anda yakin ingin menghapus item ini?")) {
+            dbItems.splice(index, 1);
+            renderTable();
+        }
+    }
+
+    function eksporJSON() {
+        if (dbItems.length === 0) return alert("Tidak ada data untuk diekspor!");
+        const dataStr = JSON.stringify(dbItems, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `backup_inventaris_${new Date().toLocaleDateString()}.json`;
+        link.click();
+    }
+
+    function imporJSON(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                if (Array.isArray(importedData)) {
+                    dbItems = importedData;
+                    renderTable();
+                    alert("Data Berhasil Dimuat!");
+                } else {
+                    throw new Error();
+                }
+            } catch (err) {
+                alert("Kesalahan: File JSON tidak valid.");
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    // Jalankan render pertama kali
+    renderTable();
+</script>
+
+</body>
+</html>
