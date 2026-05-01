@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview Laporan - GoLaundry</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #2e60e6;
+            --bg-overlay: rgba(200, 210, 230, 0.6);
+        }
+
+        body {
+            /* Efek latar belakang kabur untuk mensimulasikan modal */
+            background: linear-gradient(var(--bg-overlay), var(--bg-overlay)), 
+                        url('https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=1000');
+            background-size: cover;
+            backdrop-filter: blur(8px);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* --- Modal Card --- */
+        .preview-card {
+            background: white;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        /* --- Header Biru --- */
+        .card-header-blue {
+            background: linear-gradient(135deg, #2e60e6 0%, #1a44ad 100%);
+            padding: 25px;
+            color: white;
+            position: relative;
+        }
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .header-content {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .icon-doc {
+            background: rgba(255,255,255,0.2);
+            padding: 10px;
+            border-radius: 12px;
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+        .periode-box {
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 15px;
+            padding: 12px 15px;
+        }
+        .periode-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            opacity: 0.8;
+            letter-spacing: 0.5px;
+        }
+        .periode-date {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* --- Body Section --- */
+        .card-body-custom {
+            padding: 25px;
+        }
+        .section-title {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #999;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+        .data-label { color: #666; font-weight: 500; }
+        .data-value { color: var(--primary-blue); font-weight: 700; }
+
+        /* --- Summary Boxes --- */
+        .box-green {
+            background-color: #f1fcf1;
+            border: 1px solid #e2f5e2;
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .box-blue-info {
+            background-color: #f0f7ff;
+            border: 1px solid #e1efff;
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        /* --- Footer Buttons --- */
+        .card-footer-custom {
+            padding: 0 25px 25px 25px;
+            display: flex;
+            gap: 10px;
+        }
+        .btn-batal {
+            background-color: #ffebee;
+            color: #d32f2f;
+            border: none;
+            font-weight: 700;
+            padding: 12px;
+            border-radius: 15px;
+            flex: 1;
+        }
+        .btn-download {
+            background-color: var(--primary-blue);
+            color: white;
+            border: none;
+            font-weight: 700;
+            padding: 12px;
+            border-radius: 15px;
+            flex: 2;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="preview-card">
+        <div class="card-header-blue">
+            <button class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+            <div class="header-content">
+                <div class="icon-doc">
+                    <i class="fa-solid fa-file-pdf"></i>
+                </div>
+                <div>
+                    <h5 class="m-0 fw-bold">Laporan Laba & Rugi</h5>
+                    <small class="opacity-75">Preview sebelum mengunduh</small>
+                </div>
+            </div>
+            
+            <div class="periode-box">
+                <div class="periode-label">Periode Laporan</div>
+                <div class="periode-date">01 April 2026 — 30 April 2026</div>
+            </div>
+        </div>
+
+        <div class="card-body-custom">
+            <div class="section-title">RINGKASAN DATA</div>
+            
+            <div class="data-row">
+                <span class="data-label"><i class="fa-solid fa-arrow-up text-success me-2"></i> Total Pendapatan</span>
+                <span class="data-value">Rp 5.451.600</span>
+            </div>
+            
+            <div class="data-row">
+                <span class="data-label"><i class="fa-solid fa-arrow-down text-danger me-2"></i> Laba Kotor</span>
+                <span class="data-value">Rp 5.451.600</span>
+            </div>
+
+            <div class="data-row">
+                <span class="data-label"><i class="fa-solid fa-minus text-danger me-2"></i> Total Pengeluaran</span>
+                <span class="data-value text-danger">Rp 1.100.000</span>
+            </div>
+
+            <div class="box-green">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="fw-bold text-success" style="font-size: 0.9rem;">
+                        <i class="fa-solid fa-star me-2"></i> Pendapatan Bersih
+                    </span>
+                    <span class="fw-bold text-success">Rp 4.351.600</span>
+                </div>
+                <div class="text-success small mt-1" style="font-size: 0.75rem; margin-left: 25px;">
+                    <i class="fa-solid fa-caret-up"></i> Profit • Margin: 79.8%
+                </div>
+            </div>
+
+            <div class="box-blue-info">
+                <div class="fw-bold text-primary mb-1" style="font-size: 0.85rem;">
+                    <i class="fa-solid fa-circle-info me-2"></i> Format Laporan
+                </div>
+                <div class="text-muted" style="font-size: 0.75rem; margin-left: 23px; line-height: 1.4;">
+                    PDF A4 • Portrait • Termasuk tanda tangan • Bahasa Indonesia
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer-custom">
+            <button class="btn-batal">
+                <i class="fa-solid fa-xmark me-1"></i> Batal
+            </button>
+            <button class="btn-download">
+                <i class="fa-solid fa-download me-1"></i> Download PDF
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
