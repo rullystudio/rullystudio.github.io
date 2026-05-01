@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buku Besar - GoLaundry</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8fbff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-bottom: 30px;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header i { font-size: 1.2rem; color: #666; cursor: pointer; }
+        .header h1 { 
+            flex-grow: 1; 
+            text-align: center; 
+            font-size: 1.1rem; 
+            font-weight: 700; 
+            margin: 0;
+            color: #555;
+        }
+
+        /* Blue Card Utama */
+        .main-card {
+            background: linear-gradient(135deg, #2e60e6 0%, #1e4bb5 100%);
+            border-radius: 25px;
+            color: white;
+            padding: 25px;
+            margin-top: 20px;
+            border: none;
+            position: relative;
+        }
+        .badge-percent {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+        }
+        .action-icon-box {
+            background: rgba(255, 255, 255, 0.15);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            font-size: 1.1rem;
+        }
+        .action-text { font-size: 0.75rem; color: rgba(255,255,255,0.9); }
+
+        /* Analisis Laba Card */
+        .analysis-card {
+            border-radius: 20px;
+            border: 1px solid #e0e0e0;
+            background: white;
+            padding: 15px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+        }
+        .circle-icon-success {
+            background: #e8f5e9;
+            color: #4caf50;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        /* Small Info Cards */
+        .small-card {
+            border-radius: 15px;
+            border: none;
+            padding: 15px;
+            height: 100%;
+        }
+        .bg-light-blue { background-color: #f0f4ff; }
+        .bg-light-red { background-color: #fff1f1; }
+
+        /* Transaction Item Card */
+        .trans-card {
+            border-radius: 20px;
+            border: 1px solid #eee;
+            padding: 20px;
+            margin-top: 15px;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+        .icon-blue-circle {
+            background: #2e60e6;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+        .badge-count {
+            background: #e1ebff;
+            color: #2e60e6;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <i class="fa-solid fa-arrow-left"></i>
+        <h1>Buku Besar</h1>
+        <div style="width: 20px;"></div> </div>
+
+    <div class="container">
+        
+        <div class="card main-card">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="small opacity-75">Total Modal Saat Ini</span>
+                <span class="badge-percent"><i class="fa-solid fa-arrow-up"></i> +0.0%</span>
+            </div>
+            <h2 class="fw-bold mb-4">Rp. 29.000.000</h2>
+            
+            <div class="row text-center">
+                <div class="col-4">
+                    <div class="action-icon-box"><i class="fa-solid fa-coins"></i></div>
+                    <span class="action-text">Tambah Modal</span>
+                </div>
+                <div class="col-4">
+                    <div class="action-icon-box"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                    <span class="action-text">Tarik Uang</span>
+                </div>
+                <div class="col-4">
+                    <div class="action-icon-box"><i class="fa-solid fa-file-lines"></i></div>
+                    <span class="action-text">Detail</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="analysis-card shadow-sm">
+            <div class="circle-icon-success me-3">
+                <i class="fa-solid fa-arrow-right"></i>
+            </div>
+            <div>
+                <div class="fw-bold" style="font-size: 0.9rem;">Analisis Laba</div>
+                <div class="text-muted small">Melacak untung dan rugi dengan mudah</div>
+                <div class="text-info small fw-bold" style="font-style: italic;">Cek keuangan, & ambil keputusan cerdas!</div>
+            </div>
+        </div>
+
+        <div class="row g-3 mt-1">
+            <div class="col-8">
+                <div class="small-card bg-light-blue shadow-sm">
+                    <div class="d-flex align-items-center mb-1">
+                        <i class="fa-solid fa-wallet text-primary me-2"></i>
+                        <span class="fw-bold" style="font-size: 0.85rem;">Pendapatan</span>
+                        <span class="ms-auto fw-bold" style="font-size: 0.85rem;">Rp. 28.350.300</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted" style="font-size: 0.7rem;">21/04/2026</span>
+                        <span class="text-success fw-bold" style="font-size: 0.7rem;">+1.9%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="small-card bg-light-red shadow-sm d-flex align-items-center">
+                    <i class="fa-solid fa-user-tie text-danger me-2"></i>
+                    <span class="fw-bold" style="font-size: 0.75rem;">Gaji Karyawan</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="trans-card shadow-sm">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted small">Jumlah data transaksi</span>
+                <span class="badge-count">1</span>
+            </div>
+            <div class="d-flex align-items-center mb-2">
+                <div class="icon-blue-circle me-3">
+                    <i class="fa-solid fa-gears"></i>
+                </div>
+                <span class="fw-bold">Operasional</span>
+            </div>
+            <div class="text-muted small mb-1">Transaksi terakhir: 10/04/2026</div>
+            <h4 class="fw-bold m-0">Rp. 700.000</h4>
+        </div>
+
+        <div class="trans-card shadow-sm">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted small">Jumlah data transaksi</span>
+                <span class="badge-count">1</span>
+            </div>
+            <div class="d-flex align-items-center mb-2">
+                <div class="icon-blue-circle me-3">
+                    <i class="fa-solid fa-gears"></i>
+                </div>
+                <span class="fw-bold">Peralatan</span>
+            </div>
+            <div class="text-muted small mb-1">Transaksi terakhir: 01/04/2026</div>
+            <h4 class="fw-bold m-0">Rp. 400.000</h4>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
