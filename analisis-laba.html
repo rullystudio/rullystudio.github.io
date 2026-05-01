@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisis Laba - GoLaundry</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #2e60e6;
+            --bg-light: #f0f4ff;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            font-family: 'Segoe UI', sans-serif;
+            padding-bottom: 50px;
+        }
+
+        /* --- Header --- */
+        .header {
+            background: white;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .btn-back {
+            background: #f0f4ff;
+            color: var(--primary-blue);
+            width: 35px;
+            height: 35px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+        }
+        .header h1 {
+            flex-grow: 1;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0;
+            color: #333;
+        }
+
+        /* --- Section Cards --- */
+        .section-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 15px;
+            border: 1px solid #eef;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+        }
+        .section-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* --- Date Picker & Buttons --- */
+        .input-date {
+            background: #f8f9ff;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 15px;
+        }
+        .btn-action {
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 8px;
+        }
+        .btn-preview { background-color: #e8f5e9; color: #2e7d32; border: none; }
+        .btn-reset { background-color: #ffebee; color: #c62828; border: none; }
+        .btn-apply { background-color: var(--primary-blue); color: white; border: none; }
+
+        .date-badge {
+            background-color: #e1ebff;
+            color: var(--primary-blue);
+            padding: 6px 15px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 15px;
+        }
+
+        /* --- Cash Position --- */
+        .cash-box {
+            background: var(--primary-blue);
+            color: white;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+        }
+        .cash-box .label { font-size: 0.65rem; opacity: 0.8; text-transform: uppercase; }
+        .cash-box .amount { font-size: 1rem; font-weight: 700; margin-top: 5px; }
+
+        /* --- Table Styling --- */
+        .custom-table {
+            font-size: 0.75rem;
+            margin-top: 10px;
+        }
+        .custom-table th {
+            color: #888;
+            font-weight: 600;
+            border-bottom: 1px solid #eee;
+            padding: 10px 5px;
+        }
+        .custom-table td {
+            padding: 12px 5px;
+            vertical-align: middle;
+        }
+        .row-total-blue {
+            background-color: #eef4ff;
+            color: var(--primary-blue);
+            font-weight: 700;
+        }
+        .text-blue { color: var(--primary-blue); }
+
+        /* --- Floating Action Button --- */
+        .fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--primary-blue);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(46, 96, 230, 0.4);
+            font-size: 1.2rem;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header shadow-sm">
+        <button class="btn-back"><i class="fa-solid fa-arrow-left"></i></button>
+        <h1>Analisis Laba</h1>
+        <div style="width: 35px;"></div>
+    </div>
+
+    <div class="container">
+        
+        <div class="section-card">
+            <div class="section-title">
+                <i class="fa-solid fa-calendar-days me-2"></i> PILIH PERIODE WAKTU
+            </div>
+            <div class="input-date d-flex align-items-center">
+                <i class="fa-solid fa-calendar-check me-3 text-primary"></i>
+                <span>Pilih rentang tanggal...</span>
+            </div>
+            <div class="row g-2">
+                <div class="col-4">
+                    <button class="btn btn-action btn-preview w-100"><i class="fa-regular fa-eye me-1"></i> Preview</button>
+                </div>
+                <div class="col-4">
+                    <button class="btn btn-action btn-reset w-100"><i class="fa-solid fa-rotate-left me-1"></i> Reset</button>
+                </div>
+                <div class="col-4">
+                    <button class="btn btn-action btn-apply w-100"><i class="fa-solid fa-check me-1"></i> Terapkan</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="date-badge">
+            <i class="fa-solid fa-calendar-day me-2"></i> 01/04/2026 — 30/04/2026
+        </div>
+
+        <div class="section-card">
+            <div class="d-flex align-items-center mb-3">
+                <div class="btn-back me-3" style="width: 40px; height: 40px;"><i class="fa-solid fa-wallet"></i></div>
+                <div>
+                    <div class="fw-bold" style="font-size: 0.9rem;">Posisi Kas</div>
+                    <div class="text-muted small">Saldo kas saat ini</div>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-6">
+                    <div class="cash-box">
+                        <div class="label">Kas Tunai</div>
+                        <div class="amount">Rp 24.000.000</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="cash-box">
+                        <div class="label">Non-Tunai</div>
+                        <div class="amount">Rp 5.000.000</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                <div class="small text-muted"><i class="fa-solid fa-coins me-2"></i> Total Kas Saat Ini</div>
+                <div class="fw-bold text-blue">Rp 29.000.000</div>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <div class="d-flex align-items-center mb-3">
+                <div class="btn-back me-3" style="width: 40px; height: 40px; background: #e8f5e9; color: #4caf50;">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <div>
+                    <div class="fw-bold" style="font-size: 0.9rem;">Pendapatan</div>
+                    <div class="text-muted small">Orderan masuk periode ini</div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table custom-table text-center">
+                    <thead>
+                        <tr>
+                            <th>Jenis</th>
+                            <th>Keterangan</th>
+                            <th>Transaksi</th>
+                            <th>Diskon Rp</th>
+                            <th>Diskon %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Pendapatan</td>
+                            <td class="text-muted">Orderan Non-Tunai</td>
+                            <td class="text-blue fw-bold">2.769.600</td>
+                            <td>0</td>
+                            <td>—</td>
+                        </tr>
+                        <tr>
+                            <td>Pendapatan</td>
+                            <td class="text-muted">Orderan Tunai</td>
+                            <td class="text-blue fw-bold">2.682.000</td>
+                            <td>0</td>
+                            <td>—</td>
+                        </tr>
+                        <tr class="row-total-blue">
+                            <td colspan="2" class="text-start ps-3">Total Semua</td>
+                            <td>Rp 5.451.600</td>
+                            <td>Rp 0</td>
+                            <td>—</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top border-dashed">
+                <div class="small text-muted">Total Pendapatan</div>
+                <div class="fw-bold text-success">Rp 5.451.600</div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-2">
+                <div class="small text-muted">Total Diskon Rp</div>
+                <div class="fw-bold text-danger">Rp 0</div>
+            </div>
+        </div>
+
+    </div>
+
+    <button class="fab">
+        <i class="fa-solid fa-question"></i>
+    </button>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
