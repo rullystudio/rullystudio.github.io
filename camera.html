@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPS Map Camera - Karya Cipta Teknologi</title>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            text-align: center; 
+            background: #1a1a1a; 
+            color: white; 
+            margin: 0; 
+            overflow-x: hidden;
+        }
+        
+        header {
+            padding: 15px;
+            background: #333;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        #camera-container { 
+            position: relative; 
+            width: 100%; 
+            max-width: 640px; 
+            margin: 20px auto;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #444;
+        }
+
+        video { 
+            width: 100%; 
+            height: auto; 
+            display: block;
+        }
+
+        /* Overlay informasi di layar preview */
+        #info-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.6);
+            color: #fff;
+            padding: 10px;
+            font-size: 11px;
+            text-align: left;
+            pointer-events: none;
+        }
+
+        .controls { 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 15px;
+        }
+
+        button { 
+            padding: 15px 30px; 
+            font-size: 18px; 
+            font-weight: bold;
+            cursor: pointer; 
+            border-radius: 50px; 
+            border: none; 
+            background: #28a745; 
+            color: white; 
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        button:active { transform: scale(0.95); }
+
+        canvas { display: none; }
+
+        .status {
+            font-size: 14px;
+            color: #ffc107;
+            margin-bottom: 5px;
+        }
+
+        footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #777;
+            padding-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h2 style="margin:0;">GPS Map Camera</h2>
+    </header>
+
+    <div id="camera-container">
+        <video id="video" autoplay playsinline></video>
+        <div id="info-overlay">
+            <div id="loc-status">Menunggu GPS...</div>
+            <div id="timestamp"></div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="status" id="app-status">Menginisialisasi Kamera...</div>
+        <button id="capture">AMBIL FOTO</button>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <footer>
+        &copy; 2026 Karya Cipta Teknologi
+    </footer>
+
+    <script>
+    $(document).ready(function() {
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+        let lat = "Fetching...", lon = "Fetching...";
+        let address = "Mencari alamat...";
+
+        // 1. Fungsi Update Waktu Real-time
+        setInterval(() => {
+            const now = new Date();
+            $('#timestamp').text(now.toLocaleString('id-ID'));
+        }, 1000);
+
+        // 2. Akses Kamera
+        navigator.mediaDevices.getUserMedia({ 
+            video: { 
+                facingMode: "environment", // Menggunakan kamera belakang HP
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            }, 
+            audio: false 
+        })
+        .then(stream => { 
+            video.srcObject = stream; 
+            $('#app-status').text("Kamera Siap");
+        })
+        .catch(err => { 
+            $('#app-status').text("Error Kamera: " + err.message);
+            alert("Mohon izinkan akses kamera agar aplikasi dapat bekerja.");
+        });
+
+        // 3. Akses Lokasi (GPS)
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(position => {
+                lat = position.coords.latitude.toFixed(6);
+                lon = position.coords.longitude.toFixed(6);
+                $('#loc-status').html(`Lat: ${lat} | Lon: ${lon}`);
+                
+                // Opsional: Reverse Geocoding Sederhana (Mendapatkan Nama Wilayah)
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+                .then(res => res.json())
+                .then(data => {
+                    address = data.display_name;
+                });
+            }, error => {
+                $('#loc-status').text("GPS tidak aktif/izin ditolak.");
+            }, { enableHighAccuracy: true });
+        }
+
+        // 4. Proses Pengambilan Foto
+        $('#capture').click(function() {
+            // Set ukuran canvas sama dengan resolusi asli video
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            // Gambar frame video ke canvas
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Tambahkan Watermark Overlay (Background hitam transparan)
+            const boxHeight = 100;
+            context.fillStyle = "rgba(0, 0, 0, 0.5)";
+            context.fillRect(0, canvas.height - boxHeight, canvas.width, boxHeight);
+
+            // Setting Teks
+            context.fillStyle = "white";
+            context.font = "bold 20px Arial";
+            
+            // Gambar Koordinat & Waktu ke Canvas
+            context.fillText(`Lat: ${lat}, Lon: ${lon}`, 20, canvas.height - 70);
+            context.font = "16px Arial";
+            context.fillText(`${new Date().toLocaleString('id-ID')}`, 20, canvas.height - 45);
+            
+            // Gambar Alamat (Jika panjang, dipotong)
+            const shortAddress = address.length > 80 ? address.substring(0, 80) + "..." : address;
+            context.font = "italic 14px Arial";
+            context.fillText(shortAddress, 20, canvas.height - 20);
+
+            // Simpan Gambar Otomatis
+            const dataURL = canvas.toDataURL('image/png');
+            const downloadLink = document.createElement('a');
+            downloadLink.download = `GPS_IMG_${Date.now()}.png`;
+            downloadLink.href = dataURL;
+            downloadLink.click();
+        });
+    });
+    </script>
+</body>
+</html>
