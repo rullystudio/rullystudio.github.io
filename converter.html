@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watermark GPS Camera Sim - Clone</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #f0f0f0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 600px; width: 100%; }
+        .controls { margin-bottom: 20px; }
+        input, button { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background: #0056b3; }
+        canvas { max-width: 100%; height: auto; border: 1px solid #ddd; margin-top: 10px; display: none; }
+        #preview-container { text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Watermark GPS Editor</h2>
+    
+    <div class="controls">
+        <label>1. Pilih Foto:</label>
+        <input type="file" id="upload" accept="image/*">
+        
+        <label>2. Detail Lokasi:</label>
+        <input type="text" id="lokasi" placeholder="Contoh: Kecamatan Ngoro, Jawa Timur">
+        <input type="text" id="alamat" placeholder="Alamat lengkap / Detail">
+        <input type="text" id="koordinat" placeholder="Lat -7.65973 Long 112.272058">
+        <input type="text" id="waktu" placeholder="Minggu, 03/05/2026 10:00 AM">
+        
+        <button id="process">Generate Watermark</button>
+        <button id="download" style="background: #28a745; display: none;">Download Gambar</button>
+    </div>
+
+    <div id="preview-container">
+        <p id="status">Belum ada gambar diproses.</p>
+        <canvas id="canvas"></canvas>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let uploadedImg = new Image();
+
+    // Trigger saat file diupload
+    $('#upload').change(function(e) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            uploadedImg.onload = function() {
+                $('#status').text("Gambar siap. Klik 'Generate Watermark'");
+            }
+            uploadedImg.src = event.target.result;
+        }
+        reader.readAsDataURL(e.target.files[0]);
+    });
+
+    $('#process').click(function() {
+        if (!uploadedImg.src) return alert("Pilih gambar dulu!");
+
+        // Set ukuran canvas sesuai gambar asli
+        canvas.width = uploadedImg.width;
+        canvas.height = uploadedImg.height;
+
+        // Gambar foto asli
+        ctx.drawImage(uploadedImg, 0, 0);
+
+        // Pengaturan gaya Watermark (Overlay Hitam Transparan)
+        const rectHeight = canvas.height * 0.25; // 25% dari tinggi gambar
+        ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+        ctx.fillRect(0, canvas.height - rectHeight, canvas.width, rectHeight);
+
+        // Pengaturan Teks
+        const padding = canvas.width * 0.05;
+        const fontSizeTitle = Math.round(canvas.width * 0.035);
+        const fontSizeText = Math.round(canvas.width * 0.025);
+        let currentY = canvas.height - rectHeight + padding;
+
+        ctx.fillStyle = "white";
+        ctx.textAlign = "left";
+
+        // Gambar Teks Lokasi (Bold/Besar)
+        ctx.font = `bold ${fontSizeTitle}px Arial`;
+        ctx.fillText($('#lokasi').val(), padding, currentY);
+
+        // Gambar Detail Alamat & Koordinat
+        ctx.font = `${fontSizeText}px Arial`;
+        currentY += fontSizeTitle * 1.2;
+        
+        const wrapText = (text, x, y, maxWidth, lineHeight) => {
+            let words = text.split(' ');
+            let line = '';
+            for(let n = 0; n < words.length; n++) {
+                let testLine = line + words[n] + ' ';
+                let metrics = ctx.measureText(testLine);
+                if (metrics.width > maxWidth && n > 0) {
+                    ctx.fillText(line, x, y);
+                    line = words[n] + ' ';
+                    y += lineHeight;
+                } else { line = testLine; }
+            }
+            ctx.fillText(line, x, y);
+            return y;
+        }
+
+        currentY = wrapText($('#alamat').val(), padding, currentY, canvas.width - (padding*2), fontSizeText * 1.2);
+        currentY += fontSizeText * 1.2;
+        ctx.fillText($('#koordinat').val(), padding, currentY);
+        currentY += fontSizeText * 1.2;
+        ctx.fillText($('#waktu').val(), padding, currentY);
+
+        $('#canvas').show();
+        $('#status').hide();
+        $('#download').show();
+    });
+
+    // Fungsi Download
+    $('#download').click(function() {
+        const link = document.createElement('a');
+        link.download = 'watermarked-image.png';
+        link.href = canvas.toDataURL();
+        link.click();
+    });
+});
+</script>
+
+</body>
+</html>
