@@ -3,200 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS Map Camera Watermark Simulator</title>
+    <title>GPS Watermark - Statis</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e9ecef; padding: 20px; color: #333; display: flex; flex-direction: column; align-items: center; }
-        h1 { color: #0056b3; margin-bottom: 20px; }
-        .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 650px; width: 100%; box-sizing: border-box;}
-        .form-section { border-bottom: 1px solid #ddd; margin-bottom: 20px; padding-bottom: 20px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; color: #555; }
-        input[type="text"], input[type="file"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
-        input[type="file"] { background: #f8f9fa; cursor: pointer; }
-        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
-        button { flex: 1; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 15px; transition: background 0.2s; }
-        button#process { background: #007bff; color: white; }
-        button#process:hover { background: #0069d9; }
-        button#download { background: #28a745; color: white; display: none; }
-        button#download:hover { background: #218838; }
-        #preview-container { text-align: center; margin-top: 25px; border: 2px dashed #bbb; border-radius: 8px; padding: 10px; min-height: 150px; display: flex; align-items: center; justify-content: center; background: #fafafa;}
-        canvas { max-width: 100%; height: auto; border: 1px solid #ddd; display: none; }
-        #status-text { color: #888; font-style: italic; }
-        .info-note { font-size: 12px; color: #777; background: #fff3cd; padding: 10px; border-radius: 6px; border: 1px solid #ffeeba; margin-top: -10px; margin-bottom: 20px; }
+        body { font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; background: #333; color: white; padding: 20px; }
+        .upload-box { background: #444; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 2px dashed #666; }
+        canvas { max-width: 100%; height: auto; box-shadow: 0 0 20px rgba(0,0,0,0.5); display: none; border: 1px solid #555; }
+        button { padding: 12px 25px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
 
-<h1>Editor Watermark GPS</h1>
-
-<div class="container">
+    <h2>GPS Map Camera - Auto Watermark</h2>
     
-    <div class="info-note">
-        <strong>Catatan:</strong> Karena batasan keamanan browser, ikon peta dan logo Google di dalam kotak watermark ini menggunakan gambar statis (contoh) yang kami sediakan, *bukan* peta *live* dari Google Maps asli.
+    <div class="upload-box">
+        <label for="upload">Pilih Foto dari Galeri:</label><br><br>
+        <input type="file" id="upload" accept="image/*">
     </div>
 
-    <div class="form-section">
-        <div class="form-group">
-            <label>1. Pilih Foto Anda:</label>
-            <input type="file" id="upload" accept="image/*">
-        </div>
-    </div>
-
-    <div class="form-section">
-        <label>2. Sesuaikan Data Watermark:</label>
-        <div class="form-group">
-            <input type="text" id="lokasiUtama" value="Kecamatan Ngoro, Jawa Timur," placeholder="Contoh: Nama Gedung / Kecamatan">
-        </div>
-        <div class="form-group">
-            <input type="text" id="negara" value="Indonesia 🇮🇩" placeholder="Contoh: Indonesia">
-        </div>
-        <div class="form-group">
-            <input type="text" id="alamatDetail" value="87rc+5rp, Ganjul, Kertorejo, Kec. Ngoro, Kabupaten Jombang, Jawa Timur 61473, Indonesia" placeholder="Alamat lengkap">
-        </div>
-        <div class="form-group">
-            <input type="text" id="koordinat" value="Lat -7.659832° Long 112.272545°" placeholder="Koordinat GPS">
-        </div>
-        <div class="form-group">
-            <input type="text" id="waktu" value="Minggu, 03/05/2026 10:17 AM GMT +07:00" placeholder="Hari, Tanggal Jam">
-        </div>
-    </div>
-
-    <div class="btn-group">
-        <button id="process">Buat Watermark</button>
-        <button id="download">Unduh Hasil</button>
-    </div>
-
-    <div id="preview-container">
-        <p id="status-text">Belum ada gambar yang diproses.</p>
-        <canvas id="canvas"></canvas>
-    </div>
-</div>
+    <canvas id="mainCanvas"></canvas>
+    <button id="downloadBtn">Download Hasil Foto</button>
 
 <script>
 $(document).ready(function() {
-    const canvas = document.getElementById('canvas');
+    const canvas = document.getElementById('mainCanvas');
     const ctx = canvas.getContext('2d');
-    let uploadedImg = new Image();
+    
+    // DATA STATIS (Ubah di sini jika ingin ganti teks)
+    const data = {
+        judul: "Kecamatan Ngoro, Jawa Timur,",
+        negara: "Indonesia 🇮🇩",
+        alamat: "87rc+5rp, Ganjul, Kertorejo, Kec. Ngoro, Kabupaten Jombang, Jawa Timur 61473, Indonesia",
+        koordinat: "Lat -7.659832° Long 112.272545°",
+        waktu: "Minggu, 03/05/2026 10:17 AM GMT +07:00"
+    };
 
-    // Gambar Ikon Peta Statis (Contoh)
-    let mapIconImg = new Image();
-    mapIconImg.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAMAAAB4pFnfAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAAZQTFRF///MzMwAM75OcgAAAAJ0Uk5T/wDltzBKAAAAbElEQVR42u3YwQnAIAxG0btoD/bupMvEERpB5I97D5CHfK68bXW36m6mD80A04NmAM0AmgE0A2gG0AygGUAzgGYAzQCax89Yp7rC6lT77BwX9fA8vX/vX5Yn588Z8/PnvvLzV36m/N8MMAB6E0A6E0C6NQEAAAAASUVORK5CYII='; // Pin merah miring sederhana
-
-    // Gambar Logo Google Statis (Contoh)
-    let googleLogoImg = new Image();
-    googleLogoImg.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt496AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAAZQTFRF4uPjAAAA6M6VbAAAAAJ0Uk5T/wDltzBKAAAAZUlEQVR42u3YwQlAIBAE0N3Yf6N24f4RggS/R7B94wF3R5W+p14+vGf2jKZZ+50V8Vf5q7wV4O/yU3lrwOvlpfJSgFfLS+WhAI+Wp8pjAF4tL5XLAJxbXirXATi3vFQqAZxbXioVAO6N/isPAQYA4A1WqZz7h4QAAAAASUVORK5CYII='; // Logo Google putih sederhana
-
-    // Handler saat file diupload
     $('#upload').change(function(e) {
         const reader = new FileReader();
         reader.onload = function(event) {
-            uploadedImg.onload = function() {
-                $('#status-text').text("Gambar siap. Klik 'Buat Watermark' untuk melihat hasil.");
-                $('#canvas').hide();
-                $('#download').hide();
-            }
-            uploadedImg.src = event.target.result;
-        }
+            const img = new Image();
+            img.onload = function() {
+                prosesWatermark(img);
+            };
+            img.src = event.target.result;
+        };
         reader.readAsDataURL(e.target.files[0]);
     });
 
-    // Handler tombol "Buat Watermark"
-    $('#process').click(function() {
-        if (!uploadedImg.src) { alert("Pilih gambar terlebih dahulu!"); return; }
-
+    function prosesWatermark(img) {
         // Set ukuran canvas sesuai gambar asli
-        canvas.width = uploadedImg.width;
-        canvas.height = uploadedImg.height;
+        canvas.width = img.width;
+        canvas.height = img.height;
 
-        // 1. Gambar foto asli
-        ctx.drawImage(uploadedImg, 0, 0);
+        // 1. Gambar Foto Asli
+        ctx.drawImage(img, 0, 0);
 
-        // 2. Gambar Kotak Latar Hitam Transparan
-        const rectHeight = canvas.height * 0.28; // Tinggi kotak 28% dari tinggi gambar
-        ctx.fillStyle = "rgba(0, 0, 0, 0.45)"; // Warna hitam dengan transparansi 45%
-        ctx.fillRect(0, canvas.height - rectHeight, canvas.width, rectHeight);
+        // 2. Tentukan ukuran elemen berdasarkan lebar gambar agar proporsional
+        const w = canvas.width;
+        const h = canvas.height;
+        const padding = w * 0.03;
+        const rectHeight = h * 0.28;
+        const rectY = h - rectHeight - padding;
+        const rectWidth = w - (padding * 2);
 
-        // 3. Pengaturan Teks & Ikon
-        const p_X = canvas.width * 0.05; // Padding horizontal 5%
-        const fontSizeA = Math.round(canvas.width * 0.032); // Font besar (judul)
-        const fontSizeB = Math.round(canvas.width * 0.022); // Font sedang (alamat)
-        const fontSizeC = Math.round(canvas.width * 0.020); // Font kecil (waktu)
-        const lineHeight = fontSizeB * 1.3;
-        const iconSize = fontSizeA * 2; // Ukuran ikon peta
+        // 3. Gambar Kotak Hitam Transparan (Rounded Manual)
+        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+        roundRect(ctx, padding, rectY, rectWidth, rectHeight, 20, true);
 
-        // --- Gambar Peta Statis ---
-        let mapIconY = canvas.height - rectHeight + p_X;
-        ctx.drawImage(mapIconImg, p_X, mapIconY, iconSize, iconSize);
+        // 4. Area Peta (Kotak di sebelah kiri)
+        const mapSize = rectHeight * 0.8;
+        const mapX = padding + (rectHeight * 0.1);
+        const mapY = rectY + (rectHeight * 0.1);
         
-        // --- Gambar Logo Google Statis ---
-        let googleLogoY = mapIconY + iconSize + (fontSizeC * 0.5);
-        ctx.drawImage(googleLogoImg, p_X, googleLogoY, iconSize, iconSize / 2);
+        // Placeholder Peta (Warna Hijau/Biru seperti Maps)
+        ctx.fillStyle = "#2c3e50";
+        roundRect(ctx, mapX, mapY, mapSize, mapSize, 10, true);
+        
+        // Tambahkan Icon Pin Merah Sederhana di tengah peta
+        ctx.fillStyle = "red";
+        ctx.beginPath();
+        ctx.arc(mapX + (mapSize/2), mapY + (mapSize/2), 10, 0, Math.PI * 2);
+        ctx.fill();
 
-        // --- Gambar Teks ---
+        // 5. Tulis Teks (Di sebelah kanan peta)
+        const textX = mapX + mapSize + (padding * 0.5);
         ctx.fillStyle = "white";
         ctx.textAlign = "left";
-        let currentY = canvas.height - rectHeight + p_X + (fontSizeA * 0.5);
-        let textX = p_X + iconSize + (p_X * 0.5); // Mulai teks di sebelah kanan ikon
 
-        // Baris 1 & 2 (Kecamatan... Indonesia)
-        ctx.font = `bold ${fontSizeA}px Arial, sans-serif`;
-        ctx.fillText($('#lokasiUtama').val(), textX, currentY);
-        currentY += fontSizeA;
-        ctx.fillText($('#negara').val(), textX, currentY);
+        // Judul (Bold)
+        const sizeBesar = Math.round(w * 0.035);
+        ctx.font = `bold ${sizeBesar}px Arial`;
+        ctx.fillText(data.judul, textX, mapY + sizeBesar);
+        ctx.fillText(data.negara, textX, mapY + (sizeBesar * 2));
 
-        // Alamat Detail
-        ctx.font = `${fontSizeB}px Arial, sans-serif`;
-        currentY += lineHeight;
-        const alamat = $('#alamatDetail').val();
+        // Alamat & Detail (Regular)
+        const sizeKecil = Math.round(w * 0.022);
+        ctx.font = `${sizeKecil}px Arial`;
         
-        // Fungsi wrap text sederhana untuk alamat yang panjang
-        const wrapText = (text, x, y, maxWidth) => {
-            let words = text.split(' ');
-            let line = '';
-            for(let n = 0; n < words.length; n++) {
-                let testLine = line + words[n] + ' ';
-                let metrics = ctx.measureText(testLine);
-                if (metrics.width > maxWidth && n > 0) {
-                    ctx.fillText(line, x, y);
-                    line = words[n] + ' ';
-                    y += lineHeight;
-                } else { line = testLine; }
-            }
-            ctx.fillText(line, x, y);
-            return y;
+        // Alamat (dengan pembungkus teks jika terlalu panjang)
+        wrapText(ctx, data.alamat, textX, mapY + (sizeBesar * 2.8), rectWidth - mapSize - padding, sizeKecil * 1.2);
+
+        // Koordinat & Waktu (Paling bawah)
+        ctx.fillText(data.koordinat, textX, h - padding - (rectHeight * 0.2));
+        ctx.fillText(data.waktu, textX, h - padding - (rectHeight * 0.1));
+
+        // Tampilkan Canvas dan Tombol Download
+        $(canvas).show();
+        $('#downloadBtn').show();
+    }
+
+    // Fungsi pembantu membuat kotak rounded
+    function roundRect(ctx, x, y, width, height, radius, fill) {
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + width - radius, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+        ctx.lineTo(x + width, y + height - radius);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        ctx.lineTo(x + radius, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
+        if (fill) ctx.fill();
+    }
+
+    // Fungsi pembantu membungkus teks
+    function wrapText(context, text, x, y, maxWidth, lineHeight) {
+        var words = text.split(' ');
+        var line = '';
+        for(var n = 0; n < words.length; n++) {
+            var testLine = line + words[n] + ' ';
+            var metrics = context.measureText(testLine);
+            var testWidth = metrics.width;
+            if (testWidth > maxWidth && n > 0) {
+                context.fillText(line, x, y);
+                line = words[n] + ' ';
+                y += lineHeight;
+            } else { line = testLine; }
         }
-        currentY = wrapText(alamat, textX, currentY, canvas.width - textX - p_X);
+        context.fillText(line, x, y);
+    }
 
-        // Koordinat & Waktu (Font Kecil)
-        ctx.font = `${fontSizeC}px Arial, sans-serif`;
-        currentY += lineHeight * 1.3;
-        ctx.fillText($('#koordinat').val(), textX, currentY);
-        currentY += fontSizeC * 1.3;
-        ctx.fillText($('#waktu').val(), textX, currentY);
-
-        // --- Gambar Ikon Kecil di Kanan Atas Kotak ---
-        let smallIconSize = fontSizeA * 1.1;
-        ctx.drawImage(mapIconImg, canvas.width - (smallIconSize + p_X), canvas.height - rectHeight + (p_X/2), smallIconSize, smallIconSize);
-        ctx.font = `bold ${fontSizeC}px Arial, sans-serif`;
-        ctx.textAlign = "right";
-        ctx.fillText("GPS Map Camera", canvas.width - p_X, canvas.height - rectHeight + (p_X/2) + smallIconSize);
-
-        // Tampilkan hasil
-        $('#canvas').show();
-        $('#status-text').hide();
-        $('#download').show();
-    });
-
-    // Handler tombol "Unduh Hasil"
-    $('#download').click(function() {
+    // Fungsi Download
+    $('#downloadBtn').click(function() {
         const link = document.createElement('a');
-        link.download = 'watermark-result.png';
-        link.href = canvas.toDataURL();
+        link.download = 'GPS_Photo_Result.jpg';
+        link.href = canvas.toDataURL('image/jpeg', 0.9);
         link.click();
     });
 });
 </script>
-
 </body>
 </html>
