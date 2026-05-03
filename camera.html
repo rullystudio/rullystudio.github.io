@@ -3,208 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS Map Camera - Karya Cipta Teknologi</title>
-    
+    <title>Pro GPS Camera - Custom Date</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    
     <style>
-        * { box-sizing: border-box; }
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            text-align: center; 
-            background: #1a1a1a; 
-            color: white; 
-            margin: 0; 
-            overflow-x: hidden;
-        }
+        body { font-family: Arial, sans-serif; background: #121212; color: white; margin: 0; padding: 10px; }
+        .container { max-width: 600px; margin: auto; }
         
-        header {
-            padding: 15px;
-            background: #333;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-        }
-
-        #camera-container { 
+        /* Area Kamera */
+        #camera-box { 
             position: relative; 
             width: 100%; 
-            max-width: 640px; 
-            margin: 20px auto;
-            background: #000;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 2px solid #444;
+            background: #000; 
+            border-radius: 10px; 
+            overflow: hidden; 
+            border: 2px solid #333;
         }
+        video { width: 100%; display: block; }
 
-        video { 
-            width: 100%; 
-            height: auto; 
-            display: block;
-        }
-
-        /* Overlay informasi di layar preview */
-        #info-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0, 0, 0, 0.6);
-            color: #fff;
-            padding: 10px;
-            font-size: 11px;
+        /* Panel Pengaturan (Input Tanggal) */
+        .settings-panel {
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
             text-align: left;
-            pointer-events: none;
+        }
+        label { display: block; font-size: 12px; color: #aaa; margin-bottom: 5px; }
+        input[type="datetime-local"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background: #2a2a2a;
+            color: white;
+            margin-bottom: 15px;
         }
 
-        .controls { 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            gap: 15px;
-        }
-
+        .controls { margin-top: 15px; text-align: center; }
         button { 
-            padding: 15px 30px; 
-            font-size: 18px; 
-            font-weight: bold;
-            cursor: pointer; 
-            border-radius: 50px; 
-            border: none; 
-            background: #28a745; 
-            color: white; 
-            transition: 0.3s;
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+            background: #007bff; color: white; border: none; 
+            padding: 15px 30px; border-radius: 50px; font-weight: bold; 
+            cursor: pointer; width: 100%; font-size: 16px;
         }
-
-        button:active { transform: scale(0.95); }
+        button:active { background: #0056b3; }
 
         canvas { display: none; }
-
-        .status {
-            font-size: 14px;
-            color: #ffc107;
-            margin-bottom: 5px;
-        }
-
-        footer {
-            margin-top: 30px;
-            font-size: 12px;
-            color: #777;
-            padding-bottom: 20px;
-        }
     </style>
 </head>
 <body>
 
-    <header>
-        <h2 style="margin:0;">GPS Map Camera</h2>
-    </header>
-
-    <div id="camera-container">
+<div class="container">
+    <h3>GPS Map Camera (Custom Date)</h3>
+    
+    <div id="camera-box">
         <video id="video" autoplay playsinline></video>
-        <div id="info-overlay">
-            <div id="loc-status">Menunggu GPS...</div>
-            <div id="timestamp"></div>
-        </div>
+    </div>
+
+    <div class="settings-panel">
+        <label>Atur Tanggal & Waktu Foto:</label>
+        <input type="datetime-local" id="custom-date">
+        <p style="font-size: 11px; color: #888;">*Jika dikosongkan, akan menggunakan waktu saat ini.</p>
     </div>
 
     <div class="controls">
-        <div class="status" id="app-status">Menginisialisasi Kamera...</div>
-        <button id="capture">AMBIL FOTO</button>
+        <button id="capture">AMBIL FOTO & SIMPAN</button>
     </div>
+</div>
 
-    <canvas id="canvas"></canvas>
+<canvas id="canvas"></canvas>
 
-    <footer>
-        &copy; 2026 Karya Cipta Teknologi
-    </footer>
+<script>
+$(document).ready(function() {
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let lat = "", lon = "", address = "", plusCode = "";
 
-    <script>
-    $(document).ready(function() {
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const context = canvas.getContext('2d');
-        let lat = "Fetching...", lon = "Fetching...";
-        let address = "Mencari alamat...";
+    // Set default datetime-local ke sekarang
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('custom-date').value = now.toISOString().slice(0, 16);
 
-        // 1. Fungsi Update Waktu Real-time
-        setInterval(() => {
-            const now = new Date();
-            $('#timestamp').text(now.toLocaleString('id-ID'));
-        }, 1000);
+    // Ambil akses kamera
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        .then(stream => { video.srcObject = stream; })
+        .catch(err => alert("Kamera error: " + err));
 
-        // 2. Akses Kamera
-        navigator.mediaDevices.getUserMedia({ 
-            video: { 
-                facingMode: "environment", // Menggunakan kamera belakang HP
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            }, 
-            audio: false 
-        })
-        .then(stream => { 
-            video.srcObject = stream; 
-            $('#app-status').text("Kamera Siap");
-        })
-        .catch(err => { 
-            $('#app-status').text("Error Kamera: " + err.message);
-            alert("Mohon izinkan akses kamera agar aplikasi dapat bekerja.");
-        });
-
-        // 3. Akses Lokasi (GPS)
-        if (navigator.geolocation) {
-            navigator.geolocation.watchPosition(position => {
-                lat = position.coords.latitude.toFixed(6);
-                lon = position.coords.longitude.toFixed(6);
-                $('#loc-status').html(`Lat: ${lat} | Lon: ${lon}`);
-                
-                // Opsional: Reverse Geocoding Sederhana (Mendapatkan Nama Wilayah)
-                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+    // Ambil GPS & Alamat
+    if (navigator.geolocation) {
+        navigator.geolocation.watchPosition(pos => {
+            lat = pos.coords.latitude.toFixed(6);
+            lon = pos.coords.longitude.toFixed(6);
+            
+            // Get Address via Nominatim
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
                 .then(res => res.json())
                 .then(data => {
                     address = data.display_name;
                 });
-            }, error => {
-                $('#loc-status').text("GPS tidak aktif/izin ditolak.");
-            }, { enableHighAccuracy: true });
-        }
+        }, null, { enableHighAccuracy: true });
+    }
 
-        // 4. Proses Pengambilan Foto
-        $('#capture').click(function() {
-            // Set ukuran canvas sama dengan resolusi asli video
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
+    $('#capture').click(function() {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            // Gambar frame video ke canvas
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        // --- DRAW WATERMARK BOX (Kanan Bawah) ---
+        const boxW = canvas.width * 0.65;
+        const boxH = 140;
+        const margin = 20;
+        const x = canvas.width - boxW - margin;
+        const y = canvas.height - boxH - margin;
 
-            // Tambahkan Watermark Overlay (Background hitam transparan)
-            const boxHeight = 100;
-            context.fillStyle = "rgba(0, 0, 0, 0.5)";
-            context.fillRect(0, canvas.height - boxHeight, canvas.width, boxHeight);
+        // Background Hitam Transparan
+        ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+        ctx.beginPath();
+        ctx.roundRect(x, y, boxW, boxH, 10);
+        ctx.fill();
 
-            // Setting Teks
-            context.fillStyle = "white";
-            context.font = "bold 20px Arial";
-            
-            // Gambar Koordinat & Waktu ke Canvas
-            context.fillText(`Lat: ${lat}, Lon: ${lon}`, 20, canvas.height - 70);
-            context.font = "16px Arial";
-            context.fillText(`${new Date().toLocaleString('id-ID')}`, 20, canvas.height - 45);
-            
-            // Gambar Alamat (Jika panjang, dipotong)
-            const shortAddress = address.length > 80 ? address.substring(0, 80) + "..." : address;
-            context.font = "italic 14px Arial";
-            context.fillText(shortAddress, 20, canvas.height - 20);
+        // Teks Atas (Kecamatan/Provinsi)
+        ctx.fillStyle = "white";
+        ctx.font = "bold 20px Arial";
+        const addrParts = address.split(',');
+        const mainAddr = addrParts[1] ? addrParts[1].trim() + ", " + addrParts[2].trim() : "Lokasi Terdeteksi";
+        ctx.fillText(mainAddr, x + 15, y + 30);
 
-            // Simpan Gambar Otomatis
-            const dataURL = canvas.toDataURL('image/png');
-            const downloadLink = document.createElement('a');
-            downloadLink.download = `GPS_IMG_${Date.now()}.png`;
-            downloadLink.href = dataURL;
-            downloadLink.click();
-        });
+        // Detail Alamat & Koordinat
+        ctx.font = "14px Arial";
+        ctx.fillStyle = "#ddd";
+        
+        // Wrap text untuk alamat panjang
+        const displayAddr = address.substring(0, 85) + "...";
+        ctx.fillText(displayAddr, x + 15, y + 55, boxW - 30);
+        
+        ctx.fillText(`Lat ${lat}° Long ${lon}°`, x + 15, y + 85);
+
+        // Tanggal & Jam (Custom)
+        const userDate = new Date($('#custom-date').val());
+        const options = { weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+        const dateString = userDate.toLocaleString('id-ID', options) + " GMT +07:00";
+        
+        ctx.fillStyle = "white";
+        ctx.font = "14px Arial";
+        ctx.fillText(dateString, x + 15, y + 115);
+
+        // --- DRAW MINI MAP SIMULATION (Kiri Bawah) ---
+        const mapSize = 140;
+        const mx = margin;
+        const my = canvas.height - mapSize - margin;
+        
+        ctx.fillStyle = "#333";
+        ctx.beginPath();
+        ctx.roundRect(mx, my, mapSize, mapSize, 10);
+        ctx.fill();
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // Label Peta Sederhana
+        ctx.fillStyle = "white";
+        ctx.font = "bold 12px Arial";
+        ctx.fillText("Google", mx + 10, my + mapSize - 10);
+
+        // Download
+        const link = document.createElement('a');
+        link.download = `GPS_Custom_${Date.now()}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
     });
-    </script>
+});
+</script>
 </body>
 </html>
