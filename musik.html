@@ -3,17 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vue Playlist Bebas Iklan - Piped API</title>
+    <title>Vue Playlist - Invidious API (No Ads)</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
@@ -21,7 +16,6 @@
             align-items: center;
             padding: 20px;
         }
-
         .player-container {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -30,23 +24,9 @@
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             width: 100%;
             max-width: 500px;
-            transition: all 0.3s ease;
         }
-
-        h2 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 8px;
-            font-size: 28px;
-        }
-
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 24px;
-            font-size: 14px;
-        }
-
+        h2 { text-align: center; color: #333; margin-bottom: 8px; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 24px; font-size: 14px; }
         .now-playing {
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             border-radius: 20px;
@@ -54,30 +34,9 @@
             margin-bottom: 24px;
             text-align: center;
         }
-
-        .video-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 8px;
-            word-break: break-word;
-        }
-
-        .video-channel {
-            font-size: 14px;
-            color: #4a5568;
-            margin-bottom: 12px;
-        }
-
-        .counter {
-            font-size: 14px;
-            color: #718096;
-            background: white;
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-        }
-
+        .video-title { font-size: 18px; font-weight: 600; color: #2d3748; margin-bottom: 8px; word-break: break-word; }
+        .video-channel { font-size: 14px; color: #4a5568; margin-bottom: 12px; }
+        .counter { font-size: 14px; color: #718096; background: white; display: inline-block; padding: 4px 12px; border-radius: 20px; }
         .cover-art {
             width: 80px;
             height: 80px;
@@ -89,26 +48,13 @@
             justify-content: center;
             overflow: hidden;
         }
-
-        .cover-art img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .cover-art .no-image {
-            color: #a0aec0;
-            font-size: 12px;
-            text-align: center;
-        }
-
+        .cover-art img { width: 100%; height: 100%; object-fit: cover; }
         .controls {
             display: flex;
             gap: 16px;
             justify-content: center;
             margin: 24px 0;
         }
-
         button {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -121,20 +67,9 @@
             transition: all 0.2s ease;
             min-width: 100px;
         }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        .progress-container {
-            margin-top: 20px;
-        }
-
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .progress-container { margin-top: 20px; }
         .progress-bar {
             width: 100%;
             height: 6px;
@@ -143,60 +78,27 @@
             cursor: pointer;
             overflow: hidden;
         }
-
         .progress-fill {
             height: 100%;
             background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
             width: 0%;
             transition: width 0.1s linear;
         }
-
-        .time-info {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 8px;
-            font-size: 12px;
-            color: #718096;
-        }
-
-        .loading {
-            text-align: center;
-            color: #667eea;
-            font-size: 14px;
-            margin-top: 16px;
-        }
-
-        .error {
-            text-align: center;
-            color: #e53e3e;
-            font-size: 14px;
-            margin-top: 16px;
-            background: #fed7d7;
-            padding: 8px;
-            border-radius: 12px;
-        }
-
+        .time-info { display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: #718096; }
+        .loading { text-align: center; color: #667eea; font-size: 14px; margin-top: 16px; }
+        .error { text-align: center; color: #e53e3e; font-size: 14px; margin-top: 16px; background: #fed7d7; padding: 8px; border-radius: 12px; }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
-        .spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(102, 126, 234, 0.3);
-            border-top-color: #667eea;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
+        .spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(102, 126, 234, 0.3); border-top-color: #667eea; border-radius: 50%; animation: spin 0.8s linear infinite; }
     </style>
 </head>
 <body>
     <div id="app">
         <div class="player-container">
             <h2>🎵 Playlist Bebas Iklan</h2>
-            <div class="subtitle">Powered by Piped API (No Ads)</div>
+            <div class="subtitle">Powered by Invidious API (No Ads)</div>
 
             <div class="now-playing">
                 <div class="cover-art">
@@ -210,13 +112,13 @@
 
             <div class="controls">
                 <button @click="prevSong" :disabled="loading">⏮ Sebelumnya</button>
-                <button @click="togglePlay" :disabled="loading || !audioElement">
+                <button @click="togglePlay" :disabled="loading || !audioReady">
                     {{ isPlaying ? '⏸ Jeda' : '▶ Putar' }}
                 </button>
                 <button @click="nextSong" :disabled="loading">Selanjutnya ⏭</button>
             </div>
 
-            <div class="progress-container" v-if="audioElement">
+            <div class="progress-container" v-if="audioReady">
                 <div class="progress-bar" @click="seekTo">
                     <div class="progress-fill" :style="{ width: progressPercent + '%' }"></div>
                 </div>
@@ -240,19 +142,19 @@
 
         createApp({
             setup() {
-                // Daftar ID YouTube (bisa ditambah sesuai keinginan)
+                // Daftar ID YouTube (ganti dengan lagu favoritmu)
                 const playlist = ref([
-                    'PQtYfVkvMr4',  // Ganti dengan ID lagu favoritmu
-                    'QL1x8_W28k8',
-                    'jNQXAC9IVRw'
+                    'dQw4w9WgXcQ',  // Rick Astley - Never Gonna Give You Up (test)
+                    'jNQXAC9IVRw',  // Me at the zoo
+                    'kJQP7kiw5Fk'   // Luis Fonsi - Despacito
                 ]);
                 
                 const currentIndex = ref(0);
                 const isPlaying = ref(false);
                 const loading = ref(false);
                 const error = ref('');
+                const audioReady = ref(false);
                 
-                // Metadata video
                 const currentVideo = ref({
                     title: '',
                     uploader: '',
@@ -260,17 +162,12 @@
                     audioUrl: ''
                 });
                 
-                // Audio element
                 let audioElement = null;
-                
-                // Progress tracking
                 const currentTime = ref(0);
                 const duration = ref(0);
                 const progressPercent = ref(0);
-                
                 let progressInterval = null;
 
-                // Format waktu (detik ke mm:ss)
                 const formatTime = (seconds) => {
                     if (isNaN(seconds)) return '0:00';
                     const mins = Math.floor(seconds / 60);
@@ -278,51 +175,57 @@
                     return `${mins}:${secs.toString().padStart(2, '0')}`;
                 };
 
-                // Ambil data audio dari Piped API (bebas iklan)
-                const fetchAudioFromPiped = async (videoId) => {
-                    loading.value = true;
-                    error.value = '';
-                    
-                    // Beberapa mirror Piped API yang bisa digunakan
-                    const pipedInstances = [
-                        `https://pipedapi.kavin.rocks/streams/${videoId}`,
-                        `https://pipedapi.adminforge.de/streams/${videoId}`,
-                        `https://pipedapi.gnuxer.lol/streams/${videoId}`
+                // Menggunakan Invidious API (lebih stabil)
+                const fetchFromInvidious = async (videoId) => {
+                    // Daftar server Invidious yang masih aktif (update terbaru Jan 2026)
+                    const invidiousInstances = [
+                        `https://inv.riverside.rocks/api/v1/videos/${videoId}`,
+                        `https://invidious.privacydev.net/api/v1/videos/${videoId}`,
+                        `https://inv.vern.cc/api/v1/videos/${videoId}`,
+                        `https://invidious.nerdvpn.de/api/v1/videos/${videoId}`,
+                        `https://y.com.cm/api/v1/videos/${videoId}`,
+                        `https://invidious.flokinet.to/api/v1/videos/${videoId}`,
+                        `https://inv.bp.projectsegfau.lt/api/v1/videos/${videoId}`
                     ];
                     
-                    for (let instance of pipedInstances) {
+                    for (let instance of invidiousInstances) {
                         try {
+                            console.log(`Mencoba: ${instance}`);
                             const controller = new AbortController();
-                            const timeoutId = setTimeout(() => controller.abort(), 10000);
+                            const timeoutId = setTimeout(() => controller.abort(), 8000);
                             
-                            const response = await fetch(instance, { signal: controller.signal });
+                            const response = await fetch(instance, { 
+                                signal: controller.signal,
+                                headers: {
+                                    'Accept': 'application/json'
+                                }
+                            });
                             clearTimeout(timeoutId);
                             
                             if (!response.ok) continue;
                             
                             const data = await response.json();
                             
-                            // Set metadata video
+                            // Cek format data Invidious
+                            if (data.error) continue;
+                            
+                            // Set metadata
                             currentVideo.value = {
                                 title: data.title || 'Judul tidak tersedia',
-                                uploader: data.uploader || 'Unknown',
-                                thumbnail: data.thumbnailUrl || `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
+                                uploader: data.author || data.uploader || 'Unknown',
+                                thumbnail: data.videoThumbnails?.[4]?.url || data.thumbnailUrl || `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
                                 audioUrl: null
                             };
                             
-                            // Cari stream audio terbaik (biasanya ada di audioStreams)
+                            // Cari format audio terbaik
                             let audioStream = null;
-                            
-                            if (data.audioStreams && data.audioStreams.length > 0) {
-                                // Pilih kualitas terbaik (bitrate tertinggi)
-                                audioStream = data.audioStreams.reduce((best, current) => {
-                                    const bestBitrate = parseInt(best.bitrate) || 0;
-                                    const currentBitrate = parseInt(current.bitrate) || 0;
-                                    return currentBitrate > bestBitrate ? current : best;
-                                });
-                            } else if (data.videoStreams && data.videoStreams.length > 0) {
-                                // Fallback ke video stream (ambil audio doang)
-                                audioStream = data.videoStreams.find(v => v.quality === 'medium') || data.videoStreams[0];
+                            if (data.formatStreams && data.formatStreams.length > 0) {
+                                // Cari yang audio only atau quality terbaik untuk audio
+                                audioStream = data.formatStreams.find(f => 
+                                    f.type?.includes('audio/mp4') || 
+                                    f.type?.includes('audio/webm') ||
+                                    f.qualityLabel?.includes('audio')
+                                ) || data.formatStreams[0];
                             }
                             
                             if (audioStream && audioStream.url) {
@@ -330,34 +233,34 @@
                                 return true;
                             }
                             
-                            throw new Error('Tidak ada stream audio ditemukan');
+                            throw new Error('Stream audio tidak ditemukan');
                             
                         } catch (err) {
-                            console.warn(`Gagal fetch dari ${instance}:`, err.message);
+                            console.warn(`Gagal dari ${instance}:`, err.message);
                             continue;
                         }
                     }
-                    
-                    throw new Error('Tidak dapat mengambil audio dari semua server Piped');
+                    return false;
                 };
 
-                // Memuat dan memutar lagu
                 const loadAndPlaySong = async () => {
                     if (audioElement) {
                         audioElement.pause();
                         audioElement.src = '';
                     }
+                    audioReady.value = false;
+                    loading.value = true;
+                    error.value = '';
                     
                     const videoId = playlist.value[currentIndex.value];
                     
                     try {
-                        await fetchAudioFromPiped(videoId);
+                        const success = await fetchFromInvidious(videoId);
                         
-                        if (!currentVideo.value.audioUrl) {
-                            throw new Error('URL audio tidak ditemukan');
+                        if (!success || !currentVideo.value.audioUrl) {
+                            throw new Error('Tidak bisa mendapatkan stream audio');
                         }
                         
-                        // Buat audio element baru
                         if (!audioElement) {
                             audioElement = new Audio();
                             setupAudioEventListeners();
@@ -366,29 +269,34 @@
                         audioElement.src = currentVideo.value.audioUrl;
                         audioElement.load();
                         
-                        // Putar otomatis
-                        const playPromise = audioElement.play();
-                        if (playPromise !== undefined) {
-                            playPromise.then(() => {
-                                isPlaying.value = true;
-                            }).catch(err => {
-                                console.error('Gagal memutar otomatis:', err);
-                                error.value = 'Klik tombol play untuk mulai (autoplay diblokir browser)';
-                                isPlaying.value = false;
-                            });
+                        // Tunggu sampai audio siap
+                        await new Promise((resolve) => {
+                            audioElement.addEventListener('canplay', resolve, { once: true });
+                            setTimeout(resolve, 3000);
+                        });
+                        
+                        audioReady.value = true;
+                        
+                        // Coba putar otomatis
+                        try {
+                            await audioElement.play();
+                            isPlaying.value = true;
+                        } catch (autoplayError) {
+                            console.log('Autoplay diblokir:', autoplayError);
+                            error.value = 'Klik tombol play untuk mulai (autoplay diblokir browser)';
+                            isPlaying.value = false;
                         }
                         
                         loading.value = false;
                         
                     } catch (err) {
-                        console.error('Error loading song:', err);
-                        error.value = `Gagal memuat: ${err.message}`;
+                        console.error('Error:', err);
+                        error.value = `Gagal memuat lagu. Coba lagu lain.`;
                         loading.value = false;
-                        isPlaying.value = false;
+                        audioReady.value = false;
                     }
                 };
 
-                // Setup event listener untuk audio
                 const setupAudioEventListeners = () => {
                     if (!audioElement) return;
                     
@@ -419,7 +327,7 @@
                     
                     audioElement.addEventListener('error', (e) => {
                         console.error('Audio error:', e);
-                        error.value = 'Error memutar audio, coba lagu berikutnya';
+                        error.value = 'Error memutar, mencoba lagu berikutnya';
                         nextSong();
                     });
                 };
@@ -443,20 +351,20 @@
                     }
                 };
 
-                // Kontrol playback
-                const togglePlay = () => {
-                    if (!audioElement || !currentVideo.value.audioUrl) {
-                        loadAndPlaySong();
+                const togglePlay = async () => {
+                    if (!audioElement || !audioReady.value) {
+                        await loadAndPlaySong();
                         return;
                     }
                     
                     if (isPlaying.value) {
                         audioElement.pause();
                     } else {
-                        audioElement.play().catch(err => {
-                            console.error('Gagal play:', err);
+                        try {
+                            await audioElement.play();
+                        } catch (err) {
                             error.value = 'Gagal memutar, coba refresh';
-                        });
+                        }
                     }
                 };
                 
@@ -478,7 +386,6 @@
                     audioElement.currentTime = percent * duration.value;
                 };
 
-                // Watch currentIndex untuk update metadata
                 watch(currentIndex, () => {
                     loadAndPlaySong();
                 });
@@ -501,6 +408,7 @@
                     isPlaying,
                     loading,
                     error,
+                    audioReady,
                     currentVideo,
                     currentTime,
                     duration,
@@ -509,8 +417,7 @@
                     togglePlay,
                     nextSong,
                     prevSong,
-                    seekTo,
-                    audioElement
+                    seekTo
                 };
             }
         }).mount('#app');
