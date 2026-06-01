@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Vue YouTube Playlist</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #f4f4f9; display: flex; justify-content: center; padding: 20px; }
+        .player-card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 350px; }
+        .controls { margin: 20px 0; display: flex; gap: 10px; justify-content: center; }
+        button { padding: 10px 15px; cursor: pointer; }
+        .hidden-player { visibility: hidden; height: 0; width: 0; }
+    </style>
+</head>
+<body>
+
+<div id="app" class="player-card">
+    <h2>Playlist Audio</h2>
+    <p>Lagu ke: {{ currentIndex + 1 }} / {{ playlist.length }}</p>
+    
+    <div class="controls">
+        <button @click="prevSong">Sebelumnya</button>
+        <button @click="togglePlay">{{ isPlaying ? 'Jeda' : 'Putar' }}</button>
+        <button @click="nextSong">Selanjutnya</button>
+    </div>
+
+    <div id="youtube-player" class="hidden-player"></div>
+</div>
+
+<script>
+    const { createApp, ref, onMounted } = Vue;
+
+    createApp({
+        setup() {
+            const isPlaying = ref(false);
+            const currentIndex = ref(0);
+            const playlist = [
+                                'PQtYfVkvMr4', 
+                                'QL1x8_W28k8', 
+                                'jNQXAC9IVRw'
+                              ]; // Tambahkan ID lagu di sini
+            let player = null;
+
+            const initPlayer = () => {
+                player = new YT.Player('youtube-player', {
+                    height: '0',
+                    width: '0',
+                    videoId: playlist[currentIndex.value],
+                    events: {
+                        onStateChange: (event) => {
+                            isPlaying.value = (event.data === 1);
+                            // Otomatis putar lagu berikutnya jika lagu selesai (state 0)
+                            if (event.data === 0) nextSong();
+                        }
+                    }
+                });
+            };
+
+            const loadSong = () => {
+                if (player) {
+                    player.loadVideoById(playlist[currentIndex.value]);
+                }
+            };
+
+            const togglePlay = () => {
+                if (isPlaying.value) player.pauseVideo();
+                else player.playVideo();
+            };
+
+            const nextSong = () => {
+                currentIndex.value = (currentIndex.value + 1) % playlist.length;
+                loadSong();
+            };
+
+            const prevSong = () => {
+                currentIndex.value = (currentIndex.value - 1 + playlist.length) % playlist.length;
+                loadSong();
+            };
+
+            onMounted(() => {
+                const tag = document.createElement('script');
+                tag.src = "https://www.youtube.com/iframe_api";
+                document.head.appendChild(tag);
+                window.onYouTubeIframeAPIReady = () => initPlayer();
+            });
+
+            return { isPlaying, currentIndex, playlist, togglePlay, nextSong, prevSong };
+        }
+    }).mount('#app');
+</script>
+
+</body>
+</html>
