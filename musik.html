@@ -2,92 +2,518 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Vue YouTube Playlist</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue Playlist Bebas Iklan - Piped API</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
-        body { font-family: sans-serif; background: #f4f4f9; display: flex; justify-content: center; padding: 20px; }
-        .player-card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 350px; }
-        .controls { margin: 20px 0; display: flex; gap: 10px; justify-content: center; }
-        button { padding: 10px 15px; cursor: pointer; }
-        .hidden-player { visibility: hidden; height: 0; width: 0; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .player-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 32px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px;
+            transition: all 0.3s ease;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+
+        .now-playing {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .video-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+            word-break: break-word;
+        }
+
+        .video-channel {
+            font-size: 14px;
+            color: #4a5568;
+            margin-bottom: 12px;
+        }
+
+        .counter {
+            font-size: 14px;
+            color: #718096;
+            background: white;
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        .cover-art {
+            width: 80px;
+            height: 80px;
+            border-radius: 16px;
+            margin: 0 auto 12px;
+            background: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .cover-art img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .cover-art .no-image {
+            color: #a0aec0;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .controls {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin: 24px 0;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 100px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .progress-container {
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .time-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #718096;
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-size: 14px;
+            margin-top: 16px;
+        }
+
+        .error {
+            text-align: center;
+            color: #e53e3e;
+            font-size: 14px;
+            margin-top: 16px;
+            background: #fed7d7;
+            padding: 8px;
+            border-radius: 12px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
     </style>
 </head>
 <body>
+    <div id="app">
+        <div class="player-container">
+            <h2>🎵 Playlist Bebas Iklan</h2>
+            <div class="subtitle">Powered by Piped API (No Ads)</div>
 
-<div id="app" class="player-card">
-    <h2>Playlist Audio</h2>
-    <p>Lagu ke: {{ currentIndex + 1 }} / {{ playlist.length }}</p>
-    
-    <div class="controls">
-        <button @click="prevSong">Sebelumnya</button>
-        <button @click="togglePlay">{{ isPlaying ? 'Jeda' : 'Putar' }}</button>
-        <button @click="nextSong">Selanjutnya</button>
+            <div class="now-playing">
+                <div class="cover-art">
+                    <img v-if="currentVideo.thumbnail" :src="currentVideo.thumbnail" :alt="currentVideo.title">
+                    <div v-else class="no-image">🎵</div>
+                </div>
+                <div class="video-title">{{ currentVideo.title || 'Pilih lagu untuk mulai' }}</div>
+                <div class="video-channel">{{ currentVideo.uploader || 'YouTube' }}</div>
+                <div class="counter">Lagu ke: {{ currentIndex + 1 }} / {{ playlist.length }}</div>
+            </div>
+
+            <div class="controls">
+                <button @click="prevSong" :disabled="loading">⏮ Sebelumnya</button>
+                <button @click="togglePlay" :disabled="loading || !audioElement">
+                    {{ isPlaying ? '⏸ Jeda' : '▶ Putar' }}
+                </button>
+                <button @click="nextSong" :disabled="loading">Selanjutnya ⏭</button>
+            </div>
+
+            <div class="progress-container" v-if="audioElement">
+                <div class="progress-bar" @click="seekTo">
+                    <div class="progress-fill" :style="{ width: progressPercent + '%' }"></div>
+                </div>
+                <div class="time-info">
+                    <span>{{ formatTime(currentTime) }}</span>
+                    <span>{{ formatTime(duration) }}</span>
+                </div>
+            </div>
+
+            <div v-if="loading" class="loading">
+                <span class="spinner"></span> Memuat lagu...
+            </div>
+            <div v-if="error" class="error">
+                ⚠️ {{ error }}
+            </div>
+        </div>
     </div>
 
-    <div id="youtube-player" class="hidden-player"></div>
-</div>
+    <script>
+        const { createApp, ref, onMounted, onUnmounted, watch } = Vue;
 
-<script>
-    const { createApp, ref, onMounted } = Vue;
+        createApp({
+            setup() {
+                // Daftar ID YouTube (bisa ditambah sesuai keinginan)
+                const playlist = ref([
+                    'PQtYfVkvMr4',  // Ganti dengan ID lagu favoritmu
+                    'QL1x8_W28k8',
+                    'jNQXAC9IVRw'
+                ]);
+                
+                const currentIndex = ref(0);
+                const isPlaying = ref(false);
+                const loading = ref(false);
+                const error = ref('');
+                
+                // Metadata video
+                const currentVideo = ref({
+                    title: '',
+                    uploader: '',
+                    thumbnail: '',
+                    audioUrl: ''
+                });
+                
+                // Audio element
+                let audioElement = null;
+                
+                // Progress tracking
+                const currentTime = ref(0);
+                const duration = ref(0);
+                const progressPercent = ref(0);
+                
+                let progressInterval = null;
 
-    createApp({
-        setup() {
-            const isPlaying = ref(false);
-            const currentIndex = ref(0);
-            const playlist = [
-                                'PQtYfVkvMr4', 
-                                'QL1x8_W28k8', 
-                                'jNQXAC9IVRw'
-                              ]; // Tambahkan ID lagu di sini
-            let player = null;
+                // Format waktu (detik ke mm:ss)
+                const formatTime = (seconds) => {
+                    if (isNaN(seconds)) return '0:00';
+                    const mins = Math.floor(seconds / 60);
+                    const secs = Math.floor(seconds % 60);
+                    return `${mins}:${secs.toString().padStart(2, '0')}`;
+                };
 
-            const initPlayer = () => {
-                player = new YT.Player('youtube-player', {
-                    height: '0',
-                    width: '0',
-                    videoId: playlist[currentIndex.value],
-                    events: {
-                        onStateChange: (event) => {
-                            isPlaying.value = (event.data === 1);
-                            // Otomatis putar lagu berikutnya jika lagu selesai (state 0)
-                            if (event.data === 0) nextSong();
+                // Ambil data audio dari Piped API (bebas iklan)
+                const fetchAudioFromPiped = async (videoId) => {
+                    loading.value = true;
+                    error.value = '';
+                    
+                    // Beberapa mirror Piped API yang bisa digunakan
+                    const pipedInstances = [
+                        `https://pipedapi.kavin.rocks/streams/${videoId}`,
+                        `https://pipedapi.adminforge.de/streams/${videoId}`,
+                        `https://pipedapi.gnuxer.lol/streams/${videoId}`
+                    ];
+                    
+                    for (let instance of pipedInstances) {
+                        try {
+                            const controller = new AbortController();
+                            const timeoutId = setTimeout(() => controller.abort(), 10000);
+                            
+                            const response = await fetch(instance, { signal: controller.signal });
+                            clearTimeout(timeoutId);
+                            
+                            if (!response.ok) continue;
+                            
+                            const data = await response.json();
+                            
+                            // Set metadata video
+                            currentVideo.value = {
+                                title: data.title || 'Judul tidak tersedia',
+                                uploader: data.uploader || 'Unknown',
+                                thumbnail: data.thumbnailUrl || `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
+                                audioUrl: null
+                            };
+                            
+                            // Cari stream audio terbaik (biasanya ada di audioStreams)
+                            let audioStream = null;
+                            
+                            if (data.audioStreams && data.audioStreams.length > 0) {
+                                // Pilih kualitas terbaik (bitrate tertinggi)
+                                audioStream = data.audioStreams.reduce((best, current) => {
+                                    const bestBitrate = parseInt(best.bitrate) || 0;
+                                    const currentBitrate = parseInt(current.bitrate) || 0;
+                                    return currentBitrate > bestBitrate ? current : best;
+                                });
+                            } else if (data.videoStreams && data.videoStreams.length > 0) {
+                                // Fallback ke video stream (ambil audio doang)
+                                audioStream = data.videoStreams.find(v => v.quality === 'medium') || data.videoStreams[0];
+                            }
+                            
+                            if (audioStream && audioStream.url) {
+                                currentVideo.value.audioUrl = audioStream.url;
+                                return true;
+                            }
+                            
+                            throw new Error('Tidak ada stream audio ditemukan');
+                            
+                        } catch (err) {
+                            console.warn(`Gagal fetch dari ${instance}:`, err.message);
+                            continue;
                         }
                     }
+                    
+                    throw new Error('Tidak dapat mengambil audio dari semua server Piped');
+                };
+
+                // Memuat dan memutar lagu
+                const loadAndPlaySong = async () => {
+                    if (audioElement) {
+                        audioElement.pause();
+                        audioElement.src = '';
+                    }
+                    
+                    const videoId = playlist.value[currentIndex.value];
+                    
+                    try {
+                        await fetchAudioFromPiped(videoId);
+                        
+                        if (!currentVideo.value.audioUrl) {
+                            throw new Error('URL audio tidak ditemukan');
+                        }
+                        
+                        // Buat audio element baru
+                        if (!audioElement) {
+                            audioElement = new Audio();
+                            setupAudioEventListeners();
+                        }
+                        
+                        audioElement.src = currentVideo.value.audioUrl;
+                        audioElement.load();
+                        
+                        // Putar otomatis
+                        const playPromise = audioElement.play();
+                        if (playPromise !== undefined) {
+                            playPromise.then(() => {
+                                isPlaying.value = true;
+                            }).catch(err => {
+                                console.error('Gagal memutar otomatis:', err);
+                                error.value = 'Klik tombol play untuk mulai (autoplay diblokir browser)';
+                                isPlaying.value = false;
+                            });
+                        }
+                        
+                        loading.value = false;
+                        
+                    } catch (err) {
+                        console.error('Error loading song:', err);
+                        error.value = `Gagal memuat: ${err.message}`;
+                        loading.value = false;
+                        isPlaying.value = false;
+                    }
+                };
+
+                // Setup event listener untuk audio
+                const setupAudioEventListeners = () => {
+                    if (!audioElement) return;
+                    
+                    audioElement.addEventListener('timeupdate', () => {
+                        currentTime.value = audioElement.currentTime;
+                        if (duration.value > 0) {
+                            progressPercent.value = (currentTime.value / duration.value) * 100;
+                        }
+                    });
+                    
+                    audioElement.addEventListener('loadedmetadata', () => {
+                        duration.value = audioElement.duration;
+                    });
+                    
+                    audioElement.addEventListener('ended', () => {
+                        nextSong();
+                    });
+                    
+                    audioElement.addEventListener('play', () => {
+                        isPlaying.value = true;
+                        startProgressTimer();
+                    });
+                    
+                    audioElement.addEventListener('pause', () => {
+                        isPlaying.value = false;
+                        stopProgressTimer();
+                    });
+                    
+                    audioElement.addEventListener('error', (e) => {
+                        console.error('Audio error:', e);
+                        error.value = 'Error memutar audio, coba lagu berikutnya';
+                        nextSong();
+                    });
+                };
+                
+                const startProgressTimer = () => {
+                    stopProgressTimer();
+                    progressInterval = setInterval(() => {
+                        if (audioElement && !audioElement.paused) {
+                            currentTime.value = audioElement.currentTime;
+                            if (duration.value > 0) {
+                                progressPercent.value = (currentTime.value / duration.value) * 100;
+                            }
+                        }
+                    }, 200);
+                };
+                
+                const stopProgressTimer = () => {
+                    if (progressInterval) {
+                        clearInterval(progressInterval);
+                        progressInterval = null;
+                    }
+                };
+
+                // Kontrol playback
+                const togglePlay = () => {
+                    if (!audioElement || !currentVideo.value.audioUrl) {
+                        loadAndPlaySong();
+                        return;
+                    }
+                    
+                    if (isPlaying.value) {
+                        audioElement.pause();
+                    } else {
+                        audioElement.play().catch(err => {
+                            console.error('Gagal play:', err);
+                            error.value = 'Gagal memutar, coba refresh';
+                        });
+                    }
+                };
+                
+                const nextSong = () => {
+                    currentIndex.value = (currentIndex.value + 1) % playlist.value.length;
+                    loadAndPlaySong();
+                };
+                
+                const prevSong = () => {
+                    currentIndex.value = (currentIndex.value - 1 + playlist.value.length) % playlist.value.length;
+                    loadAndPlaySong();
+                };
+                
+                const seekTo = (event) => {
+                    if (!audioElement || !duration.value) return;
+                    const rect = event.currentTarget.getBoundingClientRect();
+                    const x = event.clientX - rect.left;
+                    const percent = x / rect.width;
+                    audioElement.currentTime = percent * duration.value;
+                };
+
+                // Watch currentIndex untuk update metadata
+                watch(currentIndex, () => {
+                    loadAndPlaySong();
                 });
-            };
 
-            const loadSong = () => {
-                if (player) {
-                    player.loadVideoById(playlist[currentIndex.value]);
-                }
-            };
+                onMounted(() => {
+                    loadAndPlaySong();
+                });
+                
+                onUnmounted(() => {
+                    if (audioElement) {
+                        audioElement.pause();
+                        audioElement.src = '';
+                    }
+                    stopProgressTimer();
+                });
 
-            const togglePlay = () => {
-                if (isPlaying.value) player.pauseVideo();
-                else player.playVideo();
-            };
-
-            const nextSong = () => {
-                currentIndex.value = (currentIndex.value + 1) % playlist.length;
-                loadSong();
-            };
-
-            const prevSong = () => {
-                currentIndex.value = (currentIndex.value - 1 + playlist.length) % playlist.length;
-                loadSong();
-            };
-
-            onMounted(() => {
-                const tag = document.createElement('script');
-                tag.src = "https://www.youtube.com/iframe_api";
-                document.head.appendChild(tag);
-                window.onYouTubeIframeAPIReady = () => initPlayer();
-            });
-
-            return { isPlaying, currentIndex, playlist, togglePlay, nextSong, prevSong };
-        }
-    }).mount('#app');
-</script>
-
+                return {
+                    playlist,
+                    currentIndex,
+                    isPlaying,
+                    loading,
+                    error,
+                    currentVideo,
+                    currentTime,
+                    duration,
+                    progressPercent,
+                    formatTime,
+                    togglePlay,
+                    nextSong,
+                    prevSong,
+                    seekTo,
+                    audioElement
+                };
+            }
+        }).mount('#app');
+    </script>
 </body>
 </html>
