@@ -1,1 +1,187 @@
-tes
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Channel - Vue 3 CDN & Sheets</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body class="bg-gray-100 p-4 md:p-8">
+
+    <div id="app" class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-md" v-cloak>
+        <h2 class="text-2xl font-bold mb-6 text-gray-800 text-center">Daftar Channel YouTube</h2>
+
+        <form @submit.prevent="handleSubmit" class="mb-8 bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 class="text-base font-semibold mb-4 text-gray-700">
+                {{ isEdit ? 'Ubah Informasi Channel' : 'Tambah Channel Baru' }}
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-600">Nama Channel</label>
+                    <input type="text" v-model.trim="form.channel_name" required :disabled="isLoading"
+                        class="mt-1 block w-full rounded border border-gray-300 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 disabled:bg-gray-200">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600">Email Utama</label>
+                    <input type="email" v-model.trim="form.email" required :disabled="isLoading"
+                        class="mt-1 block w-full rounded border border-gray-300 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 disabled:bg-gray-200">
+                </div>
+            </div>
+            <div class="mt-4 flex gap-2 justify-end">
+                <button type="button" v-if="isEdit" @click="resetForm" :disabled="isLoading"
+                    class="px-4 py-2 bg-gray-400 text-white text-sm rounded hover:bg-gray-500 transition disabled:opacity-50">
+                    Batal
+                </button>
+                <button type="submit" :disabled="isLoading"
+                    class="px-4 py-2 text-white text-sm rounded transition flex items-center gap-1 disabled:opacity-50"
+                    :class="isEdit ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-red-600 hover:bg-red-700'">
+                    <span v-if="isLoading">Memproses...</span>
+                    <span v-else>{{ isEdit ? 'Update' : 'Simpan Data' }}</span>
+                </button>
+            </div>
+        </form>
+
+        <div class="overflow-x-auto border border-gray-200 rounded-lg">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Channel</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200 relative">
+                    <tr v-if="isLoading && channels.length === 0">
+                        <td colspan="3" class="px-6 py-8 text-center text-sm text-gray-500">
+                            Menghubungkan ke Google Sheets...
+                        </td>
+                    </tr>
+                    
+                    <tr v-for="item in channels" :key="item.id" class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                            {{ item.channel_name }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            {{ item.email }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button @click="editChannel(item)" :disabled="isLoading"
+                                class="text-indigo-600 hover:text-indigo-900 mr-3 disabled:opacity-50">
+                                Edit
+                            </button>
+                            <button @click="deleteChannel(item.id)" :disabled="isLoading"
+                                class="text-red-600 hover:text-red-900 disabled:opacity-50">
+                                Hapus
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr v-if="channels.length === 0 && !isLoading">
+                        <td colspan="3" class="px-6 py-8 text-center text-sm text-gray-500">
+                            Belum ada data channel yang tersimpan.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <style>
+        [v-cloak] { display: none; }
+    </style>
+
+    <script>
+        const { createApp, ref, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                // ⚠️ MASUKKAN URL GOOGLE APPS SCRIPT (WEB APP) ANDA DI SINI
+                const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbytlWKwcrCYjzMzwXt-aJdaLFjfxx7BK1-OdZEmGjtTgBOokUWW6rrkNNNM-OTJgOfg/exec';
+                
+                const channels = ref([]);
+                const form = ref({ id: null, channel_name: '', email: '' });
+                const isEdit = ref(false);
+                const isLoading = ref(false);
+
+                // READ: Mengambil data dari spreadsheet
+                const fetchChannels = async () => {
+                    isLoading.value = true;
+                    try {
+                        const response = await fetch(SCRIPT_URL);
+                        channels.value = await response.json();
+                    } catch (error) {
+                        console.error("Gagal mengambil data dari Google Sheets:", error);
+                    } finally {
+                        isLoading.value = false;
+                    }
+                };
+
+                // Panggil fetch data pertama kali saat halaman dibuka
+                onMounted(fetchChannels);
+
+                // CREATE & UPDATE: Menyimpan data baru atau memperbarui data lama
+                const handleSubmit = async () => {
+                    isLoading.value = true;
+                    const payload = {
+                        action: isEdit.value ? 'update' : 'create',
+                        id: isEdit.value ? form.value.id : Date.now().toString(), // ID Unik berbasis string timestamp
+                        channel_name: form.value.channel_name,
+                        email: form.value.email
+                    };
+
+                    try {
+                        await fetch(SCRIPT_URL, {
+                            method: 'POST',
+                            body: JSON.stringify(payload)
+                        });
+                        
+                        await fetchChannels(); // Tarik data terbaru dari spreadsheet
+                        resetForm();
+                    } catch (error) {
+                        alert("Gagal memproses data ke Google Sheets.");
+                    } finally {
+                        isLoading.value = false;
+                    }
+                };
+
+                // DELETE: Menghapus baris data berdasarkan ID
+                const deleteChannel = async (id) => {
+                    if (!confirm('Apakah Anda yakin ingin menghapus channel ini?')) return;
+                    
+                    isLoading.value = true;
+                    try {
+                        await fetch(SCRIPT_URL, {
+                            method: 'POST',
+                            body: JSON.stringify({ action: 'delete', id: id })
+                        });
+                        await fetchChannels();
+                        if (form.value.id === id) resetForm();
+                    } catch (error) {
+                        alert("Gagal menghapus data dari Google Sheets.");
+                    } finally {
+                        isLoading.value = false;
+                    }
+                };
+
+                // Memasukkan data tabel ke dalam formulir input
+                const editChannel = (item) => {
+                    isEdit.value = true;
+                    form.value = { ...item };
+                };
+
+                // Mereset formulir kembali bersih
+                const resetForm = () => {
+                    form.value = { id: null, channel_name: '', email: '' };
+                    isEdit.value = false;
+                };
+
+                return {
+                    channels, form, isEdit, isLoading,
+                    handleSubmit, editChannel, deleteChannel, resetForm
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
