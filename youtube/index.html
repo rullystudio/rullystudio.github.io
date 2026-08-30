@@ -4,77 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rully Studio</title>
+    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="./assets/css/style.css">
 </head>
 <body class="d-flex flex-column min-vh-100">
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="#">Rully Studio</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#">Beranda</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#about">Tentang</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#projects">Proyek</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#contact">Kontak</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    <!-- Container Layout -->
+    <div id="layout-navbar"></div>
 
-    <main class="flex-grow-1">
-        <section class="py-5 text-center bg-light border-bottom">
-            <div class="container py-4">
-                <h1 class="display-5 fw-bold text-dark">Selamat Datang di Rully Studio</h1>
-                <p class="lead text-muted">Platform repositori dan portofolio pengembangan web sederhana.</p>
-                <a href="#projects" class="btn btn-primary btn-lg mt-2">Lihat Proyek</a>
-            </div>
-        </section>
-
-        <section id="about" class="py-5">
-            <div class="container">
-                <div class="row g-4">
-                    <div class="col-md-4">
-                        <div class="card h-100 shadow-sm border-0">
-                            <div class="card-body">
-                                <h5 class="card-title fw-bold">Desain Responsif</h5>
-                                <p class="card-text text-muted">Tampilan menyesuaikan dengan sempurna di perangkat seluler, tablet, maupun desktop.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card h-100 shadow-sm border-0">
-                            <div class="card-body">
-                                <h5 class="card-title fw-bold">Struktur Rapi</h5>
-                                <p class="card-text text-muted">Didesain dengan komponen Bootstrap standar agar mudah dirawat dan dikembangkan.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card h-100 shadow-sm border-0">
-                            <div class="card-body">
-                                <h5 class="card-title fw-bold">GitHub Pages Ready</h5>
-                                <p class="card-text text-muted">Dapat langsung dipublikasikan secara gratis menggunakan layanan GitHub Pages.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+    <main id="main-content" class="flex-grow-1">
+        <!-- Konten halaman akan masuk ke sini -->
     </main>
 
-    <footer class="bg-dark text-white py-3 mt-auto">
-        <div class="container text-center">
-            <p
+    <div id="layout-footer"></div>
+
+    <!-- 1. jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- 2. Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Script Pemuat Komponen dengan jQuery -->
+    <script>
+        // Fungsi untuk mengganti halaman konten
+        function loadPage(pageName) {
+            $('#main-content').load(`./pages/${pageName}.html`);
+        }
+
+        $(document).ready(function() {
+            // Memuat komponen template dasar
+            $('#layout-navbar').load('./template/navbar.html');
+            $('#layout-footer').load('./template/footer.html');
+
+            // Memuat halaman default (beranda)
+            loadPage('beranda');
+        });
+    </script>
+</body>
+</html>
